@@ -1,0 +1,41 @@
+{
+  "channels": [
+    {
+      "channel_id": "channel_1",
+      "channel_name": "Tecnología y Automatización",
+      "platforms": ["instagram", "tiktok", "youtube"],
+      "content_types": ["tutorial", "tips", "how-to"],
+      "posting_schedule": {
+        "frequency": "daily",
+        "time": "10:00"
+      }
+    },
+    {
+      "channel_id": "channel_2",
+      "channel_name": "Desarrollo Personal",
+      "platforms": ["instagram", "youtube"],
+      "content_types": ["motivacional", "consejos"],
+      "posting_schedule": {
+        "frequency": "3x_week",
+        "time": "18:00"
+      }
+    },
+    {
+      "channel_id": "channel_3",
+      "channel_name": "Finanzas y Crypto",
+      "platforms": ["instagram", "tiktok", "youtube"],
+      "content_types": ["analisis", "noticias", "educacion"],
+      "posting_schedule": {
+        "frequency": "daily",
+        "time": "14:00"
+      }
+    }
+  ],
+  "post_template": {
+    "title": "{{title}}",
+    "description": "{{description}}",
+    "hashtags": ["{{hashtag1}}", "{{hashtag2}}", "{{hashtag3}}"],
+    "media_type": "image|video",
+    "media_url": "{{media_url}}"
+  }
+}
