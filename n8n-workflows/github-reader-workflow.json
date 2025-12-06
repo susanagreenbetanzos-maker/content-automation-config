@@ -1,0 +1,186 @@
+{
+  "name": "GitHub Content Reader - Automatización Multicanal",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/susanagreenbetanzos-maker/content-automation-config/contents/templates/content-template.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer github_pat_11B3EKOQQ03XSh8xvEkqaH_FEVMSCPVnf090ngg0gSRAAVmykBB1FpaB90hjs05nAH6OKXQEFFhxtVh"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2",
+      "name": "Leer Plantilla GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decodificar contenido Base64 de GitHub\nconst base64Content = $json.content;\nconst decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');\nconst jsonData = JSON.parse(decodedContent);\n\nreturn { json: jsonData };"
+      },
+      "id": "3",
+      "name": "Decodificar Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/susanagreenbetanzos-maker/content-automation-config/contents/config/api-credentials.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer github_pat_11B3EKOQQ03XSh8xvEkqaH_FEVMSCPVnf090ngg0gSRAAVmykBB1FpaB90hjs05nAH6OKXQEFFhxtVh"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4",
+      "name": "Leer Credenciales GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decodificar credenciales Base64\nconst base64Content = $json.content;\nconst decodedContent = Buffer.from(base64Content, 'base64').toString('utf-8');\nconst credentials = JSON.parse(decodedContent);\n\nreturn { json: credentials };"
+      },
+      "id": "5",
+      "name": "Decodificar Credenciales",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combinar plantillas con credenciales\nconst templates = $input.first().json;\nconst credentials = $input.all()[1].json;\n\n// Preparar datos para publicación\nconst channels = templates.channels;\nconst socialMedia = credentials.social_media;\n\nreturn channels.map(channel => ({\n  json: {\n    channel_id: channel.channel_id,\n    channel_name: channel.channel_name,\n    platforms: channel.platforms,\n    credentials: {\n      instagram: socialMedia.instagram,\n      tiktok: socialMedia.tiktok,\n      youtube: socialMedia.youtube\n    },\n    schedule: channel.posting_schedule,\n    template: templates.post_template\n  }\n}));"
+      },
+      "id": "6",
+      "name": "Preparar Datos Publicación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [910, 400]
+    },
+    {
+      "parameters": {
+        "content": "=Canal: {{ $json.channel_name }}\nPlataformas: {{ $json.platforms.join(', ') }}\nHorario: {{ $json.schedule.time }}\n\nListo para publicar!"
+      },
+      "id": "7",
+      "name": "Log Resultado",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1130, 400]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Leer Plantilla GitHub",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Leer Credenciales GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Plantilla GitHub": {
+      "main": [
+        [
+          {
+            "node": "Decodificar Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decodificar Base64": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos Publicación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Credenciales GitHub": {
+      "main": [
+        [
+          {
+            "node": "Decodificar Credenciales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decodificar Credenciales": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos Publicación",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Preparar Datos Publicación": {
+      "main": [
+        [
+          {
+            "node": "Log Resultado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-12-06T13:00:00.000Z",
+  "versionId": "1"
+}
